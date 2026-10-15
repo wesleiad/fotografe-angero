@@ -1,4 +1,4 @@
-//! Windows only: embed the app icon and version info (VERSIONINFO) into `photocraft-cli.exe`.
+//! Windows only: embed the app icon and version info (VERSIONINFO) into `fotografe-cli.exe`.
 //!
 //! On every other target this does nothing, even when `PHOTOCRAFT_REQUIRE_WINRES` is set. A
 //! missing resource compiler is a warning, so a cross-compile from macOS or Linux still links,
@@ -17,20 +17,20 @@ fn main() -> std::io::Result<()> {
     // to `WindowsResource::new`, which reads the Cargo package version. A pre-release such as
     // `1.2.3-rc.1` stays in the strings; the numeric fields are `1.2.3.0`.
     res.set_icon("../../assets/app-icon/photocraft.ico")
-        .set("ProductName", "PhotoCraft")
-        .set("FileDescription", "PhotoCraft command-line interface")
-        .set("CompanyName", "Learning Machines LLC")
-        .set("LegalCopyright", "Copyright (c) the PhotoCraft authors. MIT OR Apache-2.0.")
-        .set("OriginalFilename", "photocraft-cli.exe")
-        .set("InternalName", "photocraft-cli");
+        .set("ProductName", "Fotografe - Angerô")
+        .set("FileDescription", "Fotografe - Angerô")
+        .set("CompanyName", "Grupo Angerô")
+        .set("LegalCopyright", "Grupo Angerô. MIT OR Apache-2.0 (ver NOTICE).")
+        .set("OriginalFilename", "fotografe-cli.exe")
+        .set("InternalName", "fotografe-cli");
     if let Err(err) = res.compile() {
         if std::env::var_os("PHOTOCRAFT_REQUIRE_WINRES").is_some() {
             return Err(std::io::Error::other(format!(
-                "embedding Windows resources into photocraft-cli.exe failed: {err}. \
+                "embedding Windows resources into fotografe-cli.exe failed: {err}. \
                  Install the Windows SDK resource compiler (rc.exe) or mingw-w64 windres and rebuild."
             )));
         }
-        println!("cargo:warning=photocraft-cli.exe built without icon/version resources: {err}");
+        println!("cargo:warning=fotografe-cli.exe built without icon/version resources: {err}");
     }
     Ok(())
 }

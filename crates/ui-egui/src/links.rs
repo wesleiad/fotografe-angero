@@ -7,10 +7,10 @@ use serde_json::{Value, json};
 use crate::PhotocraftApp;
 
 pub const DISCORD: &str = "https://discord.gg/artcraft";
-pub const ARTCRAFT_WEBSITE: &str = "https://getartcraft.com";
-pub const APP_PAGE: &str = "https://getartcraft.com/apps/photocraft";
-pub const GITHUB: &str = "https://github.com/storytold/photocraft";
-pub const ISSUES: &str = "https://github.com/storytold/photocraft/issues";
+pub const ARTCRAFT_WEBSITE: &str = "https://github.com/wesleiad/Suite-Angero";
+pub const APP_PAGE: &str = "https://github.com/wesleiad/Suite-Angero/blob/main/docs/ajuda/fotografe.md";
+pub const GITHUB: &str = "https://github.com/wesleiad/fotografe-angero";
+pub const ISSUES: &str = "https://github.com/wesleiad/fotografe-angero";
 
 /// Help-menu link commands: (id, url). Labels live in `menus::UI_COMMANDS`.
 pub const COMMANDS: &[(&str, &str)] =
@@ -34,18 +34,16 @@ pub fn open(app: &mut PhotocraftApp, ctx: &egui::Context, url: &str) -> Value {
 
 /// The prominent "Join us on Discord" button.
 pub fn discord_button(app: &mut PhotocraftApp, ui: &mut egui::Ui, min_width: f32) -> egui::Response {
-    let r = crate::widgets::primary_button(ui, tl!("Join us on Discord"), min_width).on_hover_text(DISCORD);
-    if r.clicked() {
-        open(app, ui.ctx(), DISCORD);
-    }
-    r
+    // Suíte Angerô: sem Discord (o botão não é desenhado).
+    let _ = (app, min_width);
+    ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover())
 }
 
 /// "PhotoCraft website · GitHub · ArtCraft" as links, centred. Clicks route through [`open`] (the
 /// platform browser service) rather than `ui.hyperlink_to`, which uses the unreliable `ctx.open_url`.
 pub fn link_row(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
     let t = crate::theme::Tokens::get(ui.ctx());
-    let links = [(tl!("PhotoCraft website"), APP_PAGE), (tl!("GitHub"), GITHUB), (tl!("ArtCraft"), ARTCRAFT_WEBSITE)];
+    let links = [("Ajuda do Fotografe", APP_PAGE), ("Código-fonte", GITHUB), ("Suíte Angerô", ARTCRAFT_WEBSITE)];
     let font = egui::FontId::proportional(12.5);
     let sep = "  ·  ";
     let width: f32 = links.iter().map(|(l, _)| ui.painter().layout_no_wrap((*l).into(), font.clone(), t.text).size().x).sum::<f32>()
@@ -114,8 +112,8 @@ mod tests {
         let ctx = egui::Context::default();
         for (id, url) in [
             ("help.discord", "https://discord.gg/artcraft"),
-            ("help.website", "https://getartcraft.com/apps/photocraft"),
-            ("help.github", "https://github.com/storytold/photocraft"),
+            ("help.website", "https://github.com/wesleiad/Suite-Angero/blob/main/docs/ajuda/fotografe.md"),
+            ("help.github", "https://github.com/wesleiad/fotografe-angero"),
         ] {
             let r = crate::menus::invoke(&mut app, &ctx, id, serde_json::json!({})).unwrap();
             assert_eq!(r["url"], url);

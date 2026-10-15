@@ -12,22 +12,22 @@ use photocraft_io::ExportOptions;
 use serde_json::{Value, json};
 
 pub const USAGE: &str = "\
-photocraft-cli: headless Photocraft
+fotografe-cli: headless Photocraft
 
 USAGE:
-  photocraft-cli convert <in> <out> [--format <ext>] [--quality <1-100>] [--tiff-layers] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>]
+  fotografe-cli convert <in> <out> [--format <ext>] [--quality <1-100>] [--tiff-layers] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>]
       Convert between formats (.pcraft, .psd, .png, .jpg, .tif, .webp, .exr, …).
       TIFF output is flat unless --tiff-layers keeps the layers (Photoshop layer data).
       --quality sets the JPEG or WebP quality; a WebP written with a quality is lossy, without one lossless.
       --tga-bits sets a TGA's bits per pixel: 32 writes the alpha channel (or else the transparency) as
       its alpha, 24 none. Without it: 32 with an alpha channel or transparency, else 24.
       --dpx-bits sets a DPX's bits per sample. Without it: 8 for an 8-bit document, else 16.
-  photocraft-cli info <file> [--compact]
+  fotografe-cli info <file> [--compact]
       Print the document as JSON (size, mode, depth, layer tree).
-  photocraft-cli run (<file> | --new <json>) --cmd <id> [--params <json>] [--cmd …] [--out <file>] [--format <ext>] [--quality <1-100>] [--tiff-layers] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>]
+  fotografe-cli run (<file> | --new <json>) --cmd <id> [--params <json>] [--cmd …] [--out <file>] [--format <ext>] [--quality <1-100>] [--tiff-layers] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>]
       Open a file, run engine commands in order, save the result. Each --params
       applies to the preceding --cmd. Prints each command's JSON result.
-  photocraft-cli batch --actions <actions.json|set.atn> [--action <name>] --in <dir> --out <dir> [--format <ext>] [--quality <1-100>] [--in-place] [--tiff-layers] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>]
+  fotografe-cli batch --actions <actions.json|set.atn> [--action <name>] --in <dir> --out <dir> [--format <ext>] [--quality <1-100>] [--in-place] [--tiff-layers] [--tga-bits <24|32>] [--dpx-bits <8|10|12|16>]
       Apply an action list to every image in a directory. A Photoshop Actions file (.atn) is a
       set: its action --action names plays, as below. JSON steps are [id, params] pairs,
       {\"command\": id, \"params\": {…}} objects or bare ids, as a recorded action or droplet stores them
@@ -36,21 +36,21 @@ USAGE:
       when the set holds more than one) with the whole set loaded, so its steps can play other actions
       of the set. An --out folder that is the --in folder is refused, as the results would replace
       the originals; --in-place allows it.
-  photocraft-cli droplet <file.pcdroplet> <file-or-dir>… [--out <dir>]
+  fotografe-cli droplet <file.pcdroplet> <file-or-dir>… [--out <dir>]
       Run a droplet (File › Automate › Create Droplet) on images and folders.
-  photocraft-cli commands [--json] [--filter <text>]
+  fotografe-cli commands [--json] [--filter <text>]
       List the engine command registry.
-  photocraft-cli mcp [--bridge <127.0.0.1:port>] [--control-token <64-hex> | --control-token-file <path>]
+  fotografe-cli mcp [--bridge <127.0.0.1:port>] [--control-token <64-hex> | --control-token-file <path>]
       [--automation-read-root <dir>] [--automation-write-root <dir>]
       Run the MCP server on stdio (headless engine, or bridge to a running `photocraft --control <port>`).
-  photocraft-cli serve [--port <port>] [--control-token <64-hex> | --control-token-file <path>]
+  fotografe-cli serve [--port <port>] [--control-token <64-hex> | --control-token-file <path>]
       [--automation-read-root <dir>] [--automation-write-root <dir>]
       Keep one headless session open and answer JSON lines ({\"id\",\"method\",\"params\"}) on stdio,
       or on 127.0.0.1:<port>. Methods: engine.execute, jobs.list/cancel, engine.commands,
       doc.open/new/place/save/exportLayers/exportDataSets/importDataSets/inspect/render/select/close, session.list, batch, methods
       (docs/control-protocol.md#headless-server).
 
-  photocraft-cli <subcommand> --help (or -h) prints this text. A flag the subcommand doesn't take is
+  fotografe-cli <subcommand> --help (or -h) prints this text. A flag the subcommand doesn't take is
   an error.
 ";
 
@@ -172,7 +172,7 @@ pub fn run(args: &[String], out: &mut dyn Write, err: &mut dyn Write) -> i32 {
             return 0;
         }
         "--version" | "version" => {
-            let _ = writeln!(out, "photocraft-cli {}", photocraft_engine::build_info::long_version());
+            let _ = writeln!(out, "fotografe-cli {}", photocraft_engine::build_info::long_version());
             return 0;
         }
         _ => {}
@@ -565,12 +565,12 @@ fn serve(a: &Args, err: &mut dyn Write) -> R {
             let (supplied, token_file) = security::token_inputs(a.get("--control-token").map(str::to_owned), a.get("--control-token-file").map(PathBuf::from));
             let token = security::server_token(supplied.as_deref(), token_file.as_deref()).map_err(|e| e.to_string())?;
             if let Some(path) = &token_file {
-                let _ = writeln!(err, "photocraft-cli control token file: {}", path.display());
+                let _ = writeln!(err, "fotografe-cli control token file: {}", path.display());
             } else if supplied.is_none() {
-                let _ = writeln!(err, "photocraft-cli control token: {token}");
+                let _ = writeln!(err, "fotografe-cli control token: {token}");
             }
             photocraft_automation::rpc::serve_tcp(&addr, h, token, |local| {
-                let _ = writeln!(err, "photocraft-cli serving on {local}");
+                let _ = writeln!(err, "fotografe-cli serving on {local}");
             })
             .map_err(|e| e.to_string())
         }

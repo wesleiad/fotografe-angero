@@ -19,7 +19,7 @@ name = "photocraft_cli"
 path = "src/lib.rs"
 
 [[bin]]
-name = "photocraft-cli"
+name = "fotografe-cli"
 path = "src/main.rs"
 
 [dependencies]

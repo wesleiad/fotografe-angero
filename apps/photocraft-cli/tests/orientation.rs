@@ -1,4 +1,4 @@
-//! EXIF orientation end to end through the `photocraft-cli` binary (#285): a
+//! EXIF orientation end to end through the `fotografe-cli` binary (#285): a
 //! phone-style JPEG (stored landscape, Orientation = 6) converts to an upright
 //! portrait, an explicit rotation turns it back, and a `.pcraft` round trip
 //! changes nothing.
