@@ -28,7 +28,7 @@ pub const PHOTOSHOP_STEP: &str = "actions.photoshopStep";
 /// Photoshop's Insert Stop: `{"message", "allowContinue"}`.
 pub const STOP_MESSAGE: &str = "actions.stopMessage";
 /// The set name Save Actions uses for actions that came from no set.
-pub const DEFAULT_SET: &str = "PhotoCraft Actions";
+pub const DEFAULT_SET: &str = "Ações do Fotografe";
 
 fn bad(cmd: &str, msg: impl Into<String>) -> EngineError {
     EngineError::BadParams { cmd: cmd.into(), msg: msg.into() }
