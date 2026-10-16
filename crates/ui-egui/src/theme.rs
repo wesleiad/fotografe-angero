@@ -76,7 +76,7 @@ impl ThemeKind {
             ThemeKind::Pro => "Pro (Dark)",
             ThemeKind::ProMedium => "Pro (Medium Gray)",
             ThemeKind::ProLightGray => "Pro (Light Gray)",
-            ThemeKind::ProLight => "Pro (Light)",
+            ThemeKind::ProLight => "Lua Nova (Angerô)",
             ThemeKind::Studio => "Studio (Dark)",
             ThemeKind::StudioLight => "Studio (Light)",
             ThemeKind::Classic => "Classic",
@@ -251,28 +251,33 @@ impl Tokens {
                 ..Tokens::for_kind(ThemeKind::Pro)
             },
             // Photoshop's lightest brightness: #F0F0F0 panels, dark text, a light-grey canvas.
+            // Angerô: identidade "Lua Nova" (bege, tinta anil, destaque anil da Angerô); o padrão.
             ThemeKind::ProLight => Tokens {
                 kind,
-                chrome: Color32::from_rgb(240, 240, 240),
-                canvas: Color32::from_rgb(214, 214, 214),
-                canvas_dot: Color32::from_rgb(214, 214, 214),
-                dock: Color32::from_rgb(226, 226, 226),
-                card: Color32::from_rgb(240, 240, 240),
-                card_border: Color32::from_rgb(214, 214, 214),
+                chrome: Color32::from_rgb(0xF7, 0xF5, 0xEC),
+                canvas: Color32::from_rgb(0xE6, 0xE3, 0xD3),
+                canvas_dot: Color32::from_rgb(0xE6, 0xE3, 0xD3),
+                dock: Color32::from_rgb(0xEE, 0xEC, 0xDE),
+                card: Color32::from_rgb(0xF7, 0xF5, 0xEC),
+                card_border: Color32::from_rgb(0xD9, 0xD4, 0xC2),
                 field: Color32::WHITE,
-                field_border: Color32::from_rgb(186, 186, 186),
-                hover: Color32::from_rgb(226, 226, 226),
-                pressed: Color32::from_rgb(206, 206, 206),
-                text: Color32::from_rgb(20, 20, 20),
-                text_dim: Color32::from_rgb(64, 64, 64),
-                text_faint: Color32::from_rgb(120, 120, 120),
-                icon: Color32::from_rgb(46, 46, 46),
-                accent_soft: Color32::from_rgb(214, 214, 214),
-                accent_text: Color32::from_rgb(16, 98, 196),
-                separator: Color32::from_rgb(214, 214, 214),
-                shadow: Color32::from_black_alpha(50),
-                tab_strip: Color32::from_rgb(226, 226, 226),
-                row_selected: Color32::from_rgb(204, 204, 204),
+                field_border: Color32::from_rgb(0xC9, 0xC3, 0xB0),
+                hover: Color32::from_rgb(0xEB, 0xE5, 0xF5),
+                pressed: Color32::from_rgb(0xDC, 0xD5, 0xEE),
+                text: Color32::from_rgb(0x1E, 0x23, 0x4D),
+                text_dim: Color32::from_rgb(0x4E, 0x54, 0x78),
+                text_faint: Color32::from_rgb(0x8A, 0x8D, 0xA8),
+                icon: Color32::from_rgb(0x2B, 0x3A, 0x8F),
+                accent: Color32::from_rgb(0x2B, 0x3A, 0x8F),
+                accent_soft: Color32::from_rgb(0xDE, 0xE5, 0xFA),
+                accent_border: Color32::from_rgb(0x2B, 0x3A, 0x8F),
+                accent_text: Color32::from_rgb(0x2B, 0x3A, 0x8F),
+                primary_bg: Color32::from_rgb(0x2B, 0x3A, 0x8F),
+                primary_text: Color32::WHITE,
+                separator: Color32::from_rgb(0xE1, 0xDC, 0xCB),
+                shadow: Color32::from_black_alpha(40),
+                tab_strip: Color32::from_rgb(0xE9, 0xE6, 0xD8),
+                row_selected: Color32::from_rgb(0xDE, 0xE5, 0xFA),
                 ..Tokens::for_kind(ThemeKind::Pro)
             },
             ThemeKind::Pro => Tokens {
@@ -838,12 +843,16 @@ pub fn install_fonts_with(ctx: &egui::Context, cjk: crate::cjk_fonts::Sources) {
             log::error!("bundled font {name} is unavailable; using the default UI font");
             return None;
         }
-        fonts.font_data.insert(name.to_owned(), Arc::new(FontData::from_static(bytes)));
+        // Angerô: a Montserrat (apelidos Inter*) entra a 94% para caber como a fonte anterior.
+        let data = FontData::from_static(bytes);
+        let data = if name.starts_with("Inter") { data.tweak(egui::epaint::text::FontTweak { scale: 0.94, ..Default::default() }) } else { data };
+        fonts.font_data.insert(name.to_owned(), Arc::new(data));
         Some(name.to_owned())
     };
-    let inter = add(&mut fonts, "Inter", photocraft_text::fonts::INTER_REGULAR.as_slice());
-    let medium = add(&mut fonts, "Inter-Medium", photocraft_text::fonts::INTER_MEDIUM.as_slice());
-    let semibold = add(&mut fonts, "Inter-SemiBold", photocraft_text::fonts::INTER_SEMIBOLD.as_slice());
+    // Angerô: a interface usa Montserrat (identidade Lua Nova); os nomes "Inter*" ficam como apelidos.
+    let inter = add(&mut fonts, "Inter", include_bytes!("../../../assets/fonts/Montserrat-Regular.ttf"));
+    let medium = add(&mut fonts, "Inter-Medium", include_bytes!("../../../assets/fonts/Montserrat-Medium.ttf"));
+    let semibold = add(&mut fonts, "Inter-SemiBold", include_bytes!("../../../assets/fonts/Montserrat-SemiBold.ttf"));
     let mono = add(&mut fonts, "JetBrainsMono", photocraft_text::fonts::JETBRAINS_MONO_REGULAR.as_slice());
     if let Some(inter) = inter {
         fonts.families.entry(FontFamily::Proportional).or_default().insert(0, inter);
@@ -971,11 +980,36 @@ pub fn mono(size: f32) -> FontId {
 }
 
 /// Apply a theme to egui's global style and publish its tokens.
+static CUSTOM_ACCENT: std::sync::Mutex<Option<Color32>> = std::sync::Mutex::new(None);
+
+/// Angerô: a cor de destaque escolhida pelo usuário (`None`: a da identidade Lua Nova).
+pub fn custom_accent() -> Option<Color32> {
+    CUSTOM_ACCENT.lock().ok().and_then(|c| *c)
+}
+
+/// Angerô: muda a cor de destaque a partir de "#rrggbb" ("" = padrão); vale no próximo `apply`.
+pub fn set_custom_accent_hex(hex: &str) {
+    let h = hex.trim().trim_start_matches('#');
+    let c = (h.len() == 6).then(|| u32::from_str_radix(h, 16).ok()).flatten().map(|v| Color32::from_rgb((v >> 16) as u8, (v >> 8) as u8, v as u8));
+    if let Ok(mut slot) = CUSTOM_ACCENT.lock() {
+        *slot = c;
+    }
+}
+
 pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
     // Keep native windows at SystemDefault so macOS continues reporting OS appearance changes,
     // including when an integration or restored egui state pinned its own theme preference.
     ctx.set_theme(egui::ThemePreference::System);
-    let t = Tokens::for_kind(kind);
+    let mut t = Tokens::for_kind(kind);
+    if let Some(c) = custom_accent() {
+        t.accent = c;
+        t.accent_border = c;
+        t.primary_bg = c;
+        if !t.dark() {
+            t.accent_text = c;
+            t.icon = c;
+        }
+    }
     ctx.data_mut(|d| d.insert_temp(egui::Id::new("photocraft-theme"), t));
     let mut v = if t.dark() { Visuals::dark() } else { Visuals::light() };
     v.panel_fill = t.chrome;

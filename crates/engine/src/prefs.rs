@@ -285,13 +285,17 @@ pub struct Interface {
     pub notification_auto_hide: bool,
     /// Seconds a notice stays on screen before it hides itself (Auto Hide Notifications).
     pub notification_duration_seconds: u32,
+    /// Angerô: cor de destaque escolhida pelo usuário ("#rrggbb"; vazio = a da identidade Lua Nova).
+    pub accent_color: String,
+    /// Angerô: 1 depois que o tema Lua Nova foi aplicado uma vez (0 nas preferências antigas).
+    pub angero_tema: u32,
 }
 
 impl Default for Interface {
     fn default() -> Self {
         Self {
-            theme: Theme::ProMedium,
-            appearance_mode: AppearanceMode::Dark,
+            theme: Theme::ProLight,
+            appearance_mode: AppearanceMode::Light,
             dark_theme: DarkTheme::ProMedium,
             light_theme: LightTheme::ProLight,
             favorite_themes: Vec::new(),
@@ -311,6 +315,8 @@ impl Default for Interface {
             system_title_bar: false,
             notification_auto_hide: true,
             notification_duration_seconds: 6,
+            accent_color: String::new(),
+            angero_tema: 0,
         }
     }
 }
@@ -1555,6 +1561,16 @@ impl Session {
             interface.insert("appearanceMode".into(), json!(mode));
             // A partially migrated file may already contain a newer theme selection (#5139).
             interface.entry(slot).or_insert_with(|| json!(theme.name()));
+        }
+        // Angerô: a identidade "Lua Nova" (tema claro) é o padrão; uma vez por instalação, quem
+        // vinha com o tema de antes passa para ela (depois disso, a escolha da pessoa vale).
+        if let Some(interface) = v.get_mut("interface").and_then(Value::as_object_mut)
+            && interface.get("angeroTema").and_then(Value::as_u64).unwrap_or(0) < 1
+        {
+            interface.insert("appearanceMode".into(), json!("light"));
+            interface.insert("lightTheme".into(), json!("proLight"));
+            interface.insert("theme".into(), json!("proLight"));
+            interface.insert("angeroTema".into(), json!(1));
         }
         let color = v.as_object_mut().and_then(|m| m.remove("colorSettings"));
         let presets = v.as_object_mut().and_then(|m| m.remove("presets"));

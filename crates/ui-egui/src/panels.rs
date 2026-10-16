@@ -680,6 +680,29 @@ pub fn title_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                         }
                         button.context_menu(|ui| crate::prefs_ui::appearance_context_menu(app, ui));
                     }
+                    // Angerô: cor do tema (destaque) escolhida pelo usuário, salva nas preferências.
+                    if icons_shown >= 2 {
+                        let resp = icons::button(ui, "palette", 28.0, false, tl!("Theme color"));
+                        egui::Popup::menu(&resp).close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside).show(|ui| {
+                            ui.label(egui::RichText::new(tl!("Theme color")).strong());
+                            let atual = crate::theme::custom_accent().unwrap_or(crate::theme::Tokens::for_kind(app.ui.theme).accent);
+                            let mut rgb = [atual.r(), atual.g(), atual.b()];
+                            let mut novo = None;
+                            if ui.color_edit_button_srgb(&mut rgb).changed() {
+                                novo = Some(format!("#{:02x}{:02x}{:02x}", rgb[0], rgb[1], rgb[2]));
+                            }
+                            if ui.add_enabled(crate::theme::custom_accent().is_some(), egui::Button::new(tl!("Angerô default colors"))).clicked() {
+                                novo = Some(String::new());
+                                ui.close();
+                            }
+                            if let Some(hex) = novo {
+                                if app.run("prefs.set", json!({"path": "interface.accentColor", "value": hex})).is_ok() {
+                                    let kind = app.ui.theme;
+                                    app.apply_theme(ui.ctx(), kind);
+                                }
+                            }
+                        });
+                    }
                     // The community Discord, one click away while the bar has room for it
                     // (narrow windows drop it first; it is also Help › Discord).
                     if false && ui.available_width() >= DISCORD_ROOM {

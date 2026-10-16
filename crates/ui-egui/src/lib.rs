@@ -2061,6 +2061,7 @@ impl PhotocraftApp {
         }
         self.ui.theme = kind;
         panel_docking::sync_visibility(self);
+        theme::set_custom_accent_hex(&self.session.prefs().interface.accent_color);
         theme::apply(ctx, kind);
         self.checker = None;
     }
