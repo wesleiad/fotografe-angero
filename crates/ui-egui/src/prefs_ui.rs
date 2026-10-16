@@ -227,6 +227,14 @@ pub fn load(app: &mut PhotocraftApp) {
     app.sync_recent();
     app.prefs_rt.saved_rev = app.session.prefs.rev();
     app.prefs_rt.saved_value = Some(app.session.prefs_value());
+    // Angerô: a identidade "Lua Nova" (tema claro) é o padrão; uma vez por instalação, quem vinha
+    // com outro tema passa para ela (depois disso, a escolha da pessoa vale). Depois de marcar o
+    // que já estava salvo, para que a mudança seja gravada.
+    if app.session.prefs().interface.angero_tema < 1 {
+        for (path, value) in [("interface.appearanceMode", json!("light")), ("interface.lightTheme", json!("proLight")), ("interface.angeroTema", json!(1))] {
+            let _ = app.run("prefs.set", json!({"path": path, "value": value}));
+        }
+    }
 }
 
 /// Discover recovery entries after construction, then decode one at a time without blocking

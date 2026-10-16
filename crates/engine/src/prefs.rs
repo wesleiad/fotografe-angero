@@ -1562,16 +1562,6 @@ impl Session {
             // A partially migrated file may already contain a newer theme selection (#5139).
             interface.entry(slot).or_insert_with(|| json!(theme.name()));
         }
-        // Angerô: a identidade "Lua Nova" (tema claro) é o padrão; uma vez por instalação, quem
-        // vinha com o tema de antes passa para ela (depois disso, a escolha da pessoa vale).
-        if let Some(interface) = v.get_mut("interface").and_then(Value::as_object_mut)
-            && interface.get("angeroTema").and_then(Value::as_u64).unwrap_or(0) < 1
-        {
-            interface.insert("appearanceMode".into(), json!("light"));
-            interface.insert("lightTheme".into(), json!("proLight"));
-            interface.insert("theme".into(), json!("proLight"));
-            interface.insert("angeroTema".into(), json!(1));
-        }
         let color = v.as_object_mut().and_then(|m| m.remove("colorSettings"));
         let presets = v.as_object_mut().and_then(|m| m.remove("presets"));
         let prefs: Preferences = serde_json::from_value(v).map_err(|e| format!("preferences: {e}"))?;

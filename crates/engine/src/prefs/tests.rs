@@ -52,8 +52,8 @@ fn canvas_dot_grid_can_be_disabled_persisted_and_reset() {
 #[test]
 fn appearance_defaults_and_legacy_theme_migrate() {
     let p = Preferences::default();
-    // New users keep Photoshop's default; following the system is opt-in.
-    assert_eq!(p.interface.appearance_mode, AppearanceMode::Dark);
+    // Angerô: new users get the light "Lua Nova" identity; following the system is opt-in.
+    assert_eq!(p.interface.appearance_mode, AppearanceMode::Light);
     assert_eq!(p.interface.dark_theme, DarkTheme::ProMedium);
     assert_eq!(p.interface.light_theme, LightTheme::ProLight);
     for (theme, mode, dark, light) in

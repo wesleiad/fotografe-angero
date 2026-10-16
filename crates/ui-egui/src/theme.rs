@@ -266,7 +266,7 @@ impl Tokens {
                 pressed: Color32::from_rgb(0xDC, 0xD5, 0xEE),
                 text: Color32::from_rgb(0x1E, 0x23, 0x4D),
                 text_dim: Color32::from_rgb(0x4E, 0x54, 0x78),
-                text_faint: Color32::from_rgb(0x8A, 0x8D, 0xA8),
+                text_faint: Color32::from_rgb(0x58, 0x5C, 0x7C),
                 icon: Color32::from_rgb(0x2B, 0x3A, 0x8F),
                 accent: Color32::from_rgb(0x2B, 0x3A, 0x8F),
                 accent_soft: Color32::from_rgb(0xDE, 0xE5, 0xFA),
@@ -866,6 +866,14 @@ pub fn install_fonts_with(ctx: &egui::Context, cjk: crate::cjk_fonts::Sources) {
         let mut stack: Vec<String> = primary.into_iter().collect();
         stack.extend(fallback.iter().cloned());
         fonts.families.insert(FontFamily::Name(fam.into()), stack);
+    }
+    // Angerô: a Montserrat não tem alguns símbolos (setas, ▸, ✓…) que a fonte anterior tinha; ela
+    // fica logo depois, de reserva, em toda pilha que começa pela Montserrat.
+    fonts.font_data.insert("AngeroReserva".into(), Arc::new(FontData::from_static(photocraft_text::fonts::INTER_REGULAR.as_slice())));
+    for stack in fonts.families.values_mut() {
+        if let Some(i) = stack.iter().position(|n| n.starts_with("Inter")) {
+            stack.insert(i + 1, "AngeroReserva".into());
+        }
     }
     let size = ui_font_size(ctx);
     for (name, data) in &mut fonts.font_data {
